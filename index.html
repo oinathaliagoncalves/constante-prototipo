@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Constante — protótipo do app de hábitos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --tinta:#2E2A47; --suave:#6F6A88; --linha:#ECE6F1; --fundo:#FDF9F4;
+  --lavanda:#D9D1FA; --lavanda-f:#B9ACF3; --violeta:#6B58D3;
+  --menta:#CDEFDF; --menta-f:#8FD4B4;
+  --pessego:#FFDCC7; --pessego-f:#FFB48E;
+  --rosa:#FBD3E1; --rosa-f:#F4A3C0;
+  --manteiga:#FCEBA8; --manteiga-f:#F6D266;
+  --ceu:#CFE7FB; --ceu-f:#94C8F2;
+  --coral:#F0876A; --erro:#C8473A;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Nunito,system-ui,sans-serif;color:var(--tinta);background:#EFE9F7;min-height:100vh;display:flex;align-items:center;justify-content:center;gap:56px;padding:32px;position:relative;overflow-x:hidden}
+h1,h2,h3,.titulo{font-family:Fredoka,Nunito,sans-serif;font-weight:600}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font:inherit;color:inherit}
+.deco{position:absolute;pointer-events:none}
+
+/* painel lateral (desktop) */
+.painel{max-width:300px;position:relative;z-index:1}
+.painel .marca{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.painel h1{font-size:30px}
+.painel p{color:#4f4a66;font-size:15px;line-height:1.55;margin-bottom:18px}
+.painel nav a{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:14px;color:var(--tinta);text-decoration:none;font-size:15px;font-weight:700}
+.painel nav a span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;font-size:13px;font-weight:800}
+.painel nav a.ativo{background:#fff}
+.painel small{display:block;margin-top:16px;color:#6a6582;font-size:12px}
+
+/* aparelho */
+#phone{width:390px;height:844px;background:var(--fundo);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 30px 60px rgba(46,42,71,.18),0 0 0 10px #2E2A47;z-index:1}
+.status{height:44px;display:flex;justify-content:space-between;align-items:center;padding:0 28px;font-size:14px;font-weight:800;position:relative;z-index:3}
+.tela{position:absolute;inset:0;padding-top:44px;display:none;flex-direction:column}
+.tela.on{display:flex}
+.conteudo{flex:1;overflow-y:auto;padding:8px 22px 24px;position:relative}
+.conteudo::-webkit-scrollbar{display:none}
+.conteudo>*{position:relative}
+
+/* comuns */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;height:56px;border-radius:28px;font-weight:800;font-size:16px;width:100%;text-decoration:none}
+.btn.prim{background:var(--tinta);color:#fff}
+.btn.prim:disabled{background:#C9C4D8;color:#F6F4FA;cursor:not-allowed}
+.btn.sec{background:#fff;border:2px solid var(--linha);color:var(--tinta)}
+.btn.link{color:var(--violeta)}
+.rotulo{font-size:14px;font-weight:800;color:var(--suave);margin:18px 0 8px;display:block}
+.campo{width:100%;height:54px;border-radius:18px;border:2px solid var(--linha);background:#fff;padding:0 18px;font-size:16px;outline:none;font-weight:600}
+.campo:focus{border-color:var(--lavanda-f)}
+.campo.erro{border-color:var(--erro)}
+.msg-erro{color:var(--erro);font-size:13px;font-weight:700;margin-top:6px;min-height:16px}
+.ico{width:48px;height:48px;position:relative;display:grid;place-items:center;flex-shrink:0}
+.ico>svg.forma{position:absolute;inset:0;width:100%;height:100%}
+.ico>svg.sim{position:relative;width:22px;height:22px}
+
+/* login */
+.heroi{height:330px;position:relative;margin:0 -22px;overflow:hidden}
+.logo{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:96px;height:96px}
+#login h2{font-size:32px;line-height:1.12;margin:4px 0 8px}
+#login .sub{color:var(--suave);font-size:16px;line-height:1.45;font-weight:600}
+.ou{display:flex;align-items:center;gap:12px;color:var(--suave);font-size:13px;font-weight:700;margin:12px 0}
+.ou:before,.ou:after{content:"";flex:1;height:2px;border-radius:2px;background:var(--linha)}
+.rodape-login{text-align:center;font-size:14px;color:var(--suave);font-weight:600;margin-top:14px}
+.rodape-login a{color:var(--violeta);font-weight:800;text-decoration:none}
+
+/* hoje */
+.topo{display:flex;justify-content:space-between;align-items:center;margin:6px 0 16px}
+.topo small{color:var(--suave);font-size:14px;font-weight:700}
+.topo h2{font-size:28px;margin-top:2px}
+.avatar{width:48px;height:48px;position:relative;display:grid;place-items:center;font-family:Fredoka;font-weight:600;font-size:20px;text-decoration:none;color:var(--tinta)}
+.avatar svg{position:absolute;inset:0;width:100%;height:100%}
+.avatar b{position:relative;font-weight:600}
+.resumo{background:var(--lavanda);border-radius:30px;padding:20px;display:flex;gap:18px;align-items:center;position:relative;overflow:hidden}
+.resumo>*{position:relative}
+.resumo>.deco{position:absolute}
+.anel{width:86px;height:86px;position:relative;flex-shrink:0}
+.anel svg{transform:rotate(-90deg)}
+.anel b{position:absolute;inset:0;display:grid;place-items:center;font-size:21px;font-family:Fredoka;font-weight:600}
+.resumo h3{font-size:20px;margin-bottom:4px}
+.resumo p{font-size:14px;line-height:1.4;font-weight:600;color:#4b4568}
+.secao{display:flex;justify-content:space-between;align-items:baseline;margin:22px 0 10px}
+.secao h3{font-size:18px}
+.secao span{font-size:13px;color:var(--suave);font-weight:700}
+.habito{border-radius:24px;padding:12px 14px 12px 12px;display:flex;align-items:center;gap:12px;margin-bottom:10px;border:2.5px solid transparent}
+.habito.novo{border-color:var(--tinta);border-style:dashed}
+.habito .info{flex:1;min-width:0}
+.habito .nome{font-weight:800;font-size:16px}
+.habito .meta{font-size:13px;color:#59536f;margin-top:3px;display:flex;align-items:center;gap:4px;white-space:nowrap;font-weight:600}
+.habito .meta svg{width:14px;height:14px;flex-shrink:0}
+.habito.feito .nome{text-decoration:line-through;text-decoration-thickness:2px;color:#5d5775}
+.check{width:46px;height:46px;border-radius:50%;border:2.5px solid rgba(46,42,71,.35);background:rgba(255,255,255,.7);display:grid;place-items:center;flex-shrink:0;transition:all .15s}
+.check svg{width:22px;height:22px;opacity:0}
+.habito.feito .check{background:var(--tinta);border-color:var(--tinta)}
+.habito.feito .check svg{opacity:1}
+.fab{position:absolute;right:20px;bottom:100px;height:58px;padding:0 22px 0 18px;border-radius:29px;background:var(--tinta);color:#fff;display:flex;align-items:center;gap:8px;font-weight:800;box-shadow:0 10px 24px rgba(46,42,71,.25);text-decoration:none;z-index:2}
+.toast{position:absolute;left:16px;right:16px;bottom:172px;background:var(--tinta);color:#fff;border-radius:20px;padding:14px 18px;display:flex;justify-content:space-between;align-items:center;font-size:14px;font-weight:700;transform:translateY(20px);opacity:0;pointer-events:none;transition:all .2s;z-index:3}
+.toast.on{transform:none;opacity:1;pointer-events:auto}
+.toast button{color:var(--manteiga);font-weight:800}
+
+/* tab bar */
+.tabbar{height:86px;background:#fff;border-radius:28px 28px 0 0;box-shadow:0 -6px 20px rgba(46,42,71,.06);display:flex;justify-content:space-around;padding:10px 10px 24px;position:relative;z-index:2}
+.tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:12px;font-weight:800;color:#8f8aa6;text-decoration:none;width:84px}
+.tabbar a i{width:52px;height:30px;border-radius:15px;display:grid;place-items:center}
+.tabbar a svg{width:22px;height:22px}
+.tabbar a.ativo{color:var(--tinta)}
+.tabbar a.ativo i{background:var(--lavanda)}
+
+/* novo hábito */
+.cab{display:flex;align-items:center;justify-content:space-between;padding:4px 14px 6px;position:relative;z-index:2}
+.cab h2{font-size:20px}
+.cab a{width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#fff;color:var(--tinta)}
+.icones{display:flex;gap:8px;flex-wrap:wrap}
+.icones button{border:2.5px solid transparent;border-radius:18px;padding:3px}
+.icones button.sel{border-color:var(--tinta)}
+.dias{display:flex;gap:6px}
+.dias button{flex:1;height:46px;border-radius:23px;background:#fff;border:2px solid var(--linha);font-weight:800;font-size:14px;color:var(--suave)}
+.dias button.sel{background:var(--lavanda);border-color:var(--lavanda-f);color:var(--tinta)}
+.linha-lembrete{background:#fff;border-radius:22px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.switch{width:54px;height:32px;border-radius:20px;background:#D8D4E3;position:relative;flex-shrink:0}
+.switch:after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:left .15s}
+.switch.on{background:var(--violeta)}
+.switch.on:after{left:25px}
+.hora{margin-top:8px;display:none}
+.hora.on{display:block}
+.dica{background:var(--manteiga);border-radius:22px;padding:14px 16px 14px 52px;font-size:13px;line-height:1.45;color:#5b4a12;margin-top:18px;font-weight:600;position:relative;overflow:hidden}
+.dica svg{position:absolute;left:14px;top:14px;width:26px;height:26px}
+.acao-fixa{padding:12px 22px 30px;background:var(--fundo);position:relative;z-index:2}
+
+/* confirmação */
+#criado .conteudo{display:flex;flex-direction:column;align-items:center;text-align:center;padding:30px 28px 34px}
+.selo{width:170px;height:170px;margin:40px 0 18px;position:relative;display:grid;place-items:center}
+.selo>svg{position:absolute;inset:0;width:100%;height:100%}
+.selo div{position:relative;width:76px;height:76px;border-radius:50%;background:var(--tinta);display:grid;place-items:center}
+#criado h2{font-size:30px;margin-bottom:8px}
+#criado p{color:var(--suave);line-height:1.5;font-weight:600}
+.cartao-resumo{background:#fff;border-radius:24px;padding:14px;display:flex;gap:14px;align-items:center;width:100%;margin:24px 0;text-align:left}
+.cartao-resumo small{color:var(--suave);font-size:13px;font-weight:600}
+
+/* progresso */
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{border-radius:26px;padding:16px;position:relative;overflow:hidden;min-height:128px}
+.kpi>*{position:relative}
+.kpi>.deco{position:absolute}
+.kpi small{font-size:13px;font-weight:800;color:#4b4568}
+.kpi b{display:flex;align-items:center;gap:6px;font-family:Fredoka;font-weight:600;font-size:34px;margin-top:4px}
+.kpi b svg{width:26px;height:26px}
+.kpi>span{font-size:12px;color:#4b4568;font-weight:700;display:block;max-width:110px}
+.cartao{background:#fff;border-radius:26px;padding:16px}
+.barras{display:flex;align-items:flex-end;gap:10px;height:120px;margin-top:6px}
+.barras div{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;height:100%;justify-content:flex-end}
+.barras i{display:block;width:100%;border-radius:14px 14px 8px 8px}
+.barras em{font-style:normal;font-size:12px;color:var(--suave);font-weight:800}
+.mes{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-top:8px}
+.mes i{aspect-ratio:1;display:block;background:#F2EEF6;border-radius:50%}
+.mes i.n1{background:var(--lavanda)}
+.mes i.n2{background:var(--lavanda-f);border-radius:30%}
+.mes i.n3{background:var(--violeta);border-radius:30%}
+.mes i.hj{outline:2.5px solid var(--coral);outline-offset:2px}
+.legenda{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--suave);font-weight:700;margin-top:10px;justify-content:flex-end}
+.legenda i{width:12px;height:12px;border-radius:4px;display:inline-block}
+.taxa{display:flex;align-items:center;gap:12px;padding:8px 0}
+.taxa .ico{width:40px;height:40px}
+.taxa .ico>svg.sim{width:18px;height:18px}
+.taxa .nome{font-weight:800;font-size:14px}
+.trilho{height:10px;border-radius:5px;background:#F2EEF6;margin-top:6px}
+.trilho i{display:block;height:100%;border-radius:5px}
+.taxa b{font-size:14px;width:42px;text-align:right;font-weight:800}
+
+/* perfil */
+.perfil-topo{display:flex;flex-direction:column;align-items:center;margin:10px 0 20px}
+.perfil-topo .avatar{width:100px;height:100px;font-size:38px;margin-bottom:10px}
+.perfil-topo small{color:var(--suave);font-weight:600}
+.lista{border-radius:24px;overflow:hidden}
+.lista a,.lista div{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:#fff;text-decoration:none;color:var(--tinta);font-weight:700;border-bottom:2px solid var(--fundo)}
+.lista span{color:var(--suave);font-weight:600;font-size:14px}
+.pill{display:inline-flex;align-items:center;gap:6px}
+.pill i{width:12px;height:12px;border-radius:50%;display:inline-block}
+
+@media (max-width:820px){
+  body{padding:0;background:var(--fundo);display:block}
+  .painel,.deco-fundo{display:none}
+  #phone{width:100%;height:100vh;height:100dvh;border-radius:0;box-shadow:none}
+}
+body.shot{padding:0;background:transparent;display:block}
+body.shot .painel,body.shot .deco-fundo{display:none}
+body.shot #phone{border-radius:0;box-shadow:none}
+</style>
+</head>
+<body>
+
+<div class="deco-fundo" id="deco-fundo"></div>
+
+<aside class="painel">
+  <div class="marca"><span id="logo-mini"></span><h1>Constante</h1></div>
+  <p>Protótipo navegável de um aplicativo de hábitos com check diário e acompanhamento de progresso. Clique nos elementos do celular ou use o mapa de telas.</p>
+  <nav id="mapa">
+    <a href="#login"><span style="background:var(--lavanda)">1</span>Abertura / login</a>
+    <a href="#hoje"><span style="background:var(--menta)">2</span>Hoje: check diário</a>
+    <a href="#novo"><span style="background:var(--pessego)">3</span>Novo hábito (fluxo-chave)</a>
+    <a href="#criado"><span style="background:var(--rosa)">4</span>Confirmação</a>
+    <a href="#progresso"><span style="background:var(--manteiga)">5</span>Progresso</a>
+    <a href="#perfil"><span style="background:var(--ceu)">6</span>Perfil</a>
+  </nav>
+  <small>Imersão Profissional: Projeto e Aplicação do Design Digital e a Experiência do Usuário · UNIASSELVI</small>
+</aside>
+
+<div id="phone">
+  <div class="status"><span>9:41</span><span>
+    <svg width="70" height="12" viewBox="0 0 70 12"><rect x="0" y="7" width="3" height="5" rx="1" fill="#2E2A47"/><rect x="5" y="5" width="3" height="7" rx="1" fill="#2E2A47"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#2E2A47"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#2E2A47"/><rect x="42" y="1" width="24" height="11" rx="3" fill="none" stroke="#2E2A47"/><rect x="44" y="3" width="17" height="7" rx="1.5" fill="#2E2A47"/><rect x="67" y="4.5" width="2" height="4" rx="1" fill="#2E2A47"/></svg></span></div>
+
+  <!-- 1 LOGIN -->
+  <section class="tela" id="login">
+    <div class="conteudo" style="padding-top:0">
+      <div class="heroi" id="heroi"></div>
+      <h2>Um pouco por dia.<br>Todo dia.</h2>
+      <p class="sub">Marque seus hábitos com um toque e veja sua constância florescer.</p>
+      <label class="rotulo" for="email" style="margin-top:14px">E-mail</label>
+      <input class="campo" id="email" type="email" value="camila.souza@email.com">
+      <div style="height:16px"></div>
+      <a class="btn prim" href="#hoje">Entrar</a>
+      <div class="ou">ou</div>
+      <a class="btn sec" href="#hoje">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.5 12.3c0-.8-.1-1.5-.2-2.3H12v4.3h5.9a5 5 0 0 1-2.2 3.3v2.7h3.6c2-1.9 3.2-4.7 3.2-8z"/><path fill="#34A853" d="M12 23c3 0 5.5-1 7.3-2.7l-3.6-2.7c-1 .7-2.2 1-3.7 1-2.8 0-5.2-1.9-6.1-4.5H2.2v2.8A11 11 0 0 0 12 23z"/><path fill="#FBBC05" d="M5.9 14.1a6.6 6.6 0 0 1 0-4.2V7.1H2.2a11 11 0 0 0 0 9.8z"/><path fill="#EA4335" d="M12 5.4c1.6 0 3 .6 4.1 1.6l3.1-3.1A11 11 0 0 0 2.2 7.1l3.7 2.8C6.8 7.3 9.2 5.4 12 5.4z"/></svg>
+        Continuar com Google</a>
+      <p class="rodape-login">Novo por aqui? <a href="#hoje">Criar conta</a></p>
+    </div>
+  </section>
+
+  <!-- 2 HOJE -->
+  <section class="tela" id="hoje">
+    <div class="conteudo">
+      <div class="topo">
+        <div><small>Domingo, 15 de novembro</small><h2>Olá, Camila</h2></div>
+        <a class="avatar" href="#perfil" aria-label="Perfil" data-forma="flor" data-cor="#FFDCC7"><b>C</b></a>
+      </div>
+      <div class="resumo" id="resumo">
+        <div class="anel">
+          <svg width="86" height="86" viewBox="0 0 86 86"><circle cx="43" cy="43" r="35" stroke="rgba(255,255,255,.75)" stroke-width="11" fill="none"/><circle id="anel-prog" cx="43" cy="43" r="35" stroke="#2E2A47" stroke-width="11" fill="none" stroke-linecap="round" stroke-dasharray="220" stroke-dashoffset="220" style="transition:stroke-dashoffset .3s"/></svg>
+          <b id="anel-pct">0%</b>
+        </div>
+        <div><h3 id="resumo-tit">2 de 4 hábitos</h3><p id="resumo-txt"></p></div>
+      </div>
+      <div class="secao"><h3>Hábitos de hoje</h3><span>toque para concluir</span></div>
+      <div id="lista"></div>
+      <div style="height:84px"></div>
+    </div>
+    <div class="toast" id="toast"><span id="toast-txt">Hábito concluído</span><button id="desfazer">Desfazer</button></div>
+    <a class="fab" href="#novo"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Novo hábito</a>
+    <nav class="tabbar" data-ativa="hoje"></nav>
+  </section>
+
+  <!-- 3 NOVO HÁBITO -->
+  <section class="tela" id="novo">
+    <div class="deco" id="deco-novo" style="inset:0;overflow:hidden"></div>
+    <div class="cab">
+      <a href="#hoje" aria-label="Cancelar"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></a>
+      <h2>Novo hábito</h2><span style="width:44px"></span>
+    </div>
+    <div class="conteudo" style="padding-top:0">
+      <label class="rotulo" for="nome" style="margin-top:8px">Qual hábito você quer criar?</label>
+      <input class="campo" id="nome" placeholder="Ex.: Ler 10 páginas" maxlength="32" autocomplete="off">
+      <div class="msg-erro" id="erro-nome"></div>
+      <span class="rotulo" style="margin-top:6px">Ícone e cor</span>
+      <div class="icones" id="icones"></div>
+      <span class="rotulo">Em quais dias?</span>
+      <div class="dias" id="dias"></div>
+      <div class="msg-erro" id="erro-dias"></div>
+      <span class="rotulo" style="margin-top:6px">Lembrete</span>
+      <div class="linha-lembrete">
+        <div><div style="font-weight:800">Me lembrar</div><div style="font-size:13px;color:var(--suave);font-weight:600">Notificação no horário escolhido</div></div>
+        <button class="switch on" id="sw" aria-label="Ativar lembrete"></button>
+      </div>
+      <div class="hora on" id="hora"><select class="campo" id="hora-sel"><option>07:00</option><option>12:30</option><option selected>19:00</option><option>21:30</option><option>22:30</option></select></div>
+      <div class="dica"><svg viewBox="0 0 24 24"><path fill="#E9A92A" d="M12 1C13 8 16 11 23 12C16 13 13 16 12 23C11 16 8 13 1 12C8 11 11 8 12 1Z"/></svg><b>Dica:</b> comece pequeno. Hábitos curtos (2 a 10 minutos) são mais fáceis de manter nas primeiras semanas.</div>
+    </div>
+    <div class="acao-fixa"><button class="btn prim" id="criar" disabled>Criar hábito</button></div>
+  </section>
+
+  <!-- 4 CONFIRMAÇÃO -->
+  <section class="tela" id="criado">
+    <div class="deco" id="confete" style="inset:0;overflow:hidden"></div>
+    <div class="conteudo">
+      <div class="selo" id="selo"><div><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div></div>
+      <h2>Hábito criado!</h2>
+      <p>Ele já aparece na sua lista de hoje.<br>O primeiro check é o mais importante.</p>
+      <div class="cartao-resumo" id="cartao-criado"></div>
+      <a class="btn prim" href="#hoje" style="margin-top:auto">Ver meus hábitos</a>
+      <a class="btn link" href="#novo" style="margin-top:4px">Criar outro</a>
+    </div>
+  </section>
+
+  <!-- 5 PROGRESSO -->
+  <section class="tela" id="progresso">
+    <div class="conteudo">
+      <div class="topo"><div><small>Últimos 30 dias</small><h2>Seu progresso</h2></div></div>
+      <div class="kpis">
+        <div class="kpi" id="kpi1" style="background:var(--pessego)"><small>Sequência atual</small><b><span id="chama-kpi"></span>12</b><span>dias seguidos · recorde 18</span></div>
+        <div class="kpi" id="kpi2" style="background:var(--menta)"><small>Na semana</small><b>86%</b><span>+9 pontos vs. semana passada</span></div>
+      </div>
+      <div class="secao"><h3>Esta semana</h3><span>hábitos concluídos</span></div>
+      <div class="cartao"><div class="barras" id="barras"></div></div>
+      <div class="secao"><h3>Novembro</h3><span>dias com check</span></div>
+      <div class="cartao"><div class="mes" id="mes"></div>
+        <div class="legenda">menos <i style="background:#F2EEF6"></i><i style="background:var(--lavanda)"></i><i style="background:var(--lavanda-f)"></i><i style="background:var(--violeta)"></i> mais</div></div>
+      <div class="secao"><h3>Por hábito</h3><span>taxa no mês</span></div>
+      <div class="cartao" id="por-habito"></div>
+    </div>
+    <nav class="tabbar" data-ativa="progresso"></nav>
+  </section>
+
+  <!-- 6 PERFIL -->
+  <section class="tela" id="perfil">
+    <div class="deco" id="deco-perfil" style="left:0;right:0;top:0;height:260px;overflow:hidden"></div>
+    <div class="conteudo">
+      <div class="perfil-topo"><div class="avatar" data-forma="flor" data-cor="#FFDCC7"><b>C</b></div><h2 style="font-size:24px">Camila Souza</h2><small>Membro desde setembro de 2026</small></div>
+      <div class="lista">
+        <div>Hábitos ativos <span id="qtd-ativos">4</span></div>
+        <div>Lembretes <span class="pill"><i style="background:var(--menta-f)"></i>Ativados</span></div>
+        <div>Início da semana <span>Segunda-feira</span></div>
+        <div>Tema <span class="pill"><i style="background:var(--lavanda-f)"></i>Pastel</span></div>
+      </div>
+      <div style="height:14px"></div>
+      <div class="lista"><a href="#login" style="color:var(--erro)">Sair da conta <span>›</span></a></div>
+    </div>
+    <nav class="tabbar" data-ativa="perfil"></nav>
+  </section>
+</div>
+
+<script>
+/* ---------- biblioteca de formas ---------- */
+function flor(cor, petalas=8){ let s=''; for(let i=0;i<petalas;i++){const a=i/petalas*Math.PI*2; s+=`<circle cx="${50+30*Math.cos(a)}" cy="${50+30*Math.sin(a)}" r="20" fill="${cor}"/>`;} return s+`<circle cx="50" cy="50" r="32" fill="${cor}"/>`; }
+const F = {
+  circulo:c=>`<circle cx="50" cy="50" r="50" fill="${c}"/>`,
+  flor:c=>flor(c),
+  blob:c=>`<path fill="${c}" d="M83 22C95 37 99 58 90 74 81 90 60 100 41 97 22 94 5 78 2 59-1 40 10 20 27 9 44-2 71 7 83 22Z"/>`,
+  quadrado:c=>`<rect x="6" y="6" width="88" height="88" rx="30" fill="${c}"/>`,
+  arco:c=>`<path fill="${c}" d="M4 100V50a46 46 0 0 1 92 0v50z"/>`,
+  pilula:c=>`<rect x="0" y="22" width="100" height="56" rx="28" fill="${c}"/>`,
+  estrela:c=>`<path fill="${c}" d="M50 0C54 34 66 46 100 50 66 54 54 66 50 100 46 66 34 54 0 50 34 46 46 34 50 0Z"/>`,
+  meia:c=>`<path fill="${c}" d="M0 50a50 50 0 0 1 100 0z"/>`,
+  anel:c=>`<circle cx="50" cy="50" r="40" fill="none" stroke="${c}" stroke-width="16"/>`,
+  onda:c=>`<path fill="none" stroke="${c}" stroke-width="9" stroke-linecap="round" d="M5 50Q17 25 29 50T53 50T77 50T101 50"/>`,
+  triangulo:c=>`<path fill="${c}" d="M50 8Q55 8 58 13L94 80Q97 88 88 88H12Q3 88 6 80L42 13Q45 8 50 8Z"/>`,
+  pontos:c=>{let s='';for(let y=0;y<4;y++)for(let x=0;x<4;x++)s+=`<circle cx="${12+x*25}" cy="${12+y*25}" r="6" fill="${c}"/>`;return s;},
+  gota:c=>`<path fill="${c}" d="M50 0C80 30 92 52 92 64A42 42 0 0 1 8 64C8 52 20 30 50 0Z"/>`
+};
+const svgForma=(f,c,cls='')=>`<svg class="${cls}" viewBox="0 0 100 100">${F[f](c)}</svg>`;
+function deco(lista){ return lista.map(([f,c,x,y,w,rot=0,op=1])=>`<svg class="deco" viewBox="0 0 100 100" style="left:${x}px;top:${y}px;width:${w}px;height:${w}px;transform:rotate(${rot}deg);opacity:${op}">${F[f](c)}</svg>`).join(''); }
+
+const ICONES = {
+  agua:{fundo:'#CFE7FB',forte:'#94C8F2',forma:'circulo',tinta:'#245F92',svg:'<path d="M12 3s-6 6.4-6 10.8a6 6 0 0 0 12 0C18 9.4 12 3 12 3z" fill="currentColor"/>'},
+  estudo:{fundo:'#E5DEFC',forte:'#B9ACF3',forma:'flor',tinta:'#45329F',svg:'<path d="M2 9l10-5 10 5-10 5z" fill="currentColor"/><path d="M6 11v5c3 2.5 9 2.5 12 0v-5" fill="none" stroke="currentColor" stroke-width="2.4"/>'},
+  livro:{fundo:'#FFE4D3',forte:'#FFB48E',forma:'blob',tinta:'#8F3F12',svg:'<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5z" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"/>'},
+  sol:{fundo:'#D5F2E4',forte:'#8FD4B4',forma:'quadrado',tinta:'#1A6448',svg:'<circle cx="12" cy="12" r="4.5" fill="currentColor"/><g stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.9 4.9l1.8 1.8M17.3 17.3l1.8 1.8M4.9 19.1l1.8-1.8M17.3 6.7l1.8-1.8"/></g>'},
+  coracao:{fundo:'#FCDCE7',forte:'#F4A3C0',forma:'gota',tinta:'#952D55',svg:'<path d="M12 20s-7.5-4.6-7.5-10A4.3 4.3 0 0 1 12 7.4 4.3 4.3 0 0 1 19.5 10c0 5.4-7.5 10-7.5 10z" fill="currentColor"/>'},
+  lua:{fundo:'#FCF0BF',forte:'#F6D266',forma:'arco',tinta:'#6E5406',svg:'<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z" fill="currentColor"/>'}
+};
+const icone=(k,cls='ico')=>{const i=ICONES[k];return `<div class="${cls}" style="color:${i.tinta}">${svgForma(i.forma,i.forte,'forma')}<svg class="sim" viewBox="0 0 24 24">${i.svg}</svg></div>`;};
+const CHAMA='<svg viewBox="0 0 24 24"><path fill="#F0876A" d="M12 2c1 4 5 5.6 5 10.6A5 5 0 0 1 7 12.6c0-2.6 1.5-4.1 2.6-5.1 0 2.1 1 3.2 2 3.2 0-3.2-1-5.8.4-8.7z"/></svg>';
+const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const LOGO=`${F.flor('#2E2A47')}<path d="M32 52l12 12 25-27" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+/* ---------- decorações ---------- */
+document.getElementById('heroi').innerHTML = deco([
+  ['circulo','#D9D1FA',-40,10,190],['flor','#FCEBA8',230,-30,170,15],['blob','#CDEFDF',250,190,150,40],
+  ['meia','#FBD3E1',20,262,120],['pilula','#FFDCC7',140,228,110,-25],['estrela','#F6D266',70,50,40],
+  ['estrela','#B9ACF3',300,150,26],['onda','#94C8F2',150,20,90],['pontos','#F4A3C0',312,282,52],
+  ['anel','#8FD4B4',10,170,70],['triangulo','#CFE7FB',196,262,56,20],['circulo','#FFB48E',118,118,18]
+]) + `<svg class="logo" viewBox="0 0 100 100">${LOGO}</svg>`;
+document.getElementById('logo-mini').innerHTML=`<svg width="44" height="44" viewBox="0 0 100 100">${LOGO}</svg>`;
+document.getElementById('resumo').insertAdjacentHTML('afterbegin', deco([
+  ['circulo','#FCEBA8',270,-40,110],['meia','#FBD3E1',220,104,70,180],['estrela','#ffffff',165,12,22,0,.9],['onda','#B9ACF3',-24,120,90]
+]));
+document.getElementById('deco-novo').innerHTML=deco([['flor','#FBD3E1',300,-40,130,0,.7],['circulo','#CFE7FB',-50,-30,110,0,.7],['estrela','#F6D266',258,70,20]]);
+document.getElementById('confete').innerHTML=deco([
+  ['estrela','#F6D266',40,130,34],['circulo','#F4A3C0',300,120,22],['triangulo','#94C8F2',22,340,26,25],['pilula','#8FD4B4',336,330,40,40],
+  ['onda','#B9ACF3',12,170,64,-10],['circulo','#FFB48E',326,210,14],['estrela','#B9ACF3',300,50,24],['meia','#CDEFDF',-30,690,140],
+  ['blob','#FCEBA8',290,700,160,30],['pontos','#F4A3C0',40,62,48],['anel','#FFB48E',150,72,26],['triangulo','#FBD3E1',340,420,22,-20]
+]);
+document.getElementById('selo').insertAdjacentHTML('afterbegin',`<svg viewBox="0 0 100 100">${F.flor('#CDEFDF')}</svg>`);
+document.getElementById('deco-perfil').innerHTML=deco([['blob','#D9D1FA',-60,-50,200],['circulo','#FCEBA8',290,-30,120],['estrela','#F4A3C0',300,120,30],['meia','#CFE7FB',290,196,80],['onda','#8FD4B4',24,40,80]]);
+document.getElementById('kpi1').insertAdjacentHTML('afterbegin',deco([['flor','#FFB48E',100,70,90,0,.55]]));
+document.getElementById('kpi2').insertAdjacentHTML('afterbegin',deco([['meia','#8FD4B4',90,84,90,0,.6],['estrela','#ffffff',128,14,20]]));
+document.getElementById('chama-kpi').innerHTML=CHAMA;
+document.querySelectorAll('.avatar[data-forma]').forEach(a=>a.insertAdjacentHTML('afterbegin',svgForma(a.dataset.forma,a.dataset.cor)));
+document.getElementById('deco-fundo').innerHTML=deco([['flor','#D9D1FA',-60,-60,260],['blob','#CDEFDF',window.innerWidth-220,window.innerHeight-260,320],['estrela','#F6D266',window.innerWidth-160,80,60],['circulo','#FFDCC7',80,window.innerHeight-160,120]]);
+
+/* ---------- estado ---------- */
+let habitos=[
+  {id:1,nome:'Beber 2 L de água',ic:'agua',seq:12,info:'Todos os dias',feito:true},
+  {id:2,nome:'Estudar 30 min',ic:'estudo',seq:9,info:'Seg a sex · 19:00',feito:true},
+  {id:3,nome:'Ler 10 páginas',ic:'livro',seq:5,info:'Todos os dias · 21:30',feito:false},
+  {id:4,nome:'Meditar 5 min',ic:'sol',seq:3,info:'Todos os dias · 07:00',feito:false}
+];
+let novoId=null, ultimo=null, tToast;
+function render(){
+  document.getElementById('lista').innerHTML=habitos.map(h=>`
+    <div class="habito ${h.feito?'feito':''} ${h.id===novoId?'novo':''}" data-id="${h.id}" style="background:${ICONES[h.ic].fundo}">
+      ${icone(h.ic)}
+      <div class="info"><div class="nome">${h.nome}</div>
+        <div class="meta">${h.seq>0?CHAMA+h.seq+(h.seq===1?' dia':' dias')+' · ':''}<span style="overflow:hidden;text-overflow:ellipsis">${h.info}</span></div></div>
+      <button class="check" aria-label="Concluir ${h.nome}">${CHECK}</button>
+    </div>`).join('');
+  const total=habitos.length, feitos=habitos.filter(h=>h.feito).length;
+  document.getElementById('anel-prog').style.strokeDashoffset=220-220*feitos/total;
+  document.getElementById('anel-pct').textContent=Math.round(feitos/total*100)+'%';
+  document.getElementById('resumo-tit').textContent=`${feitos} de ${total} hábitos`;
+  document.getElementById('resumo-txt').textContent=feitos===total?'Dia completo! Sua sequência subiu para 13 dias.':`Faltam ${total-feitos} para fechar o dia e manter sua sequência de 12 dias.`;
+  document.getElementById('qtd-ativos').textContent=total;
+}
+document.getElementById('lista').addEventListener('click',e=>{
+  const b=e.target.closest('.check'); if(!b) return;
+  const h=habitos.find(x=>x.id==b.closest('.habito').dataset.id);
+  h.feito=!h.feito; h.seq+=h.feito?1:-1; ultimo=h; render();
+  document.getElementById('toast-txt').textContent=h.feito?`“${h.nome}” concluído`:`“${h.nome}” desmarcado`;
+  const t=document.getElementById('toast'); t.classList.add('on'); clearTimeout(tToast); tToast=setTimeout(()=>t.classList.remove('on'),4000);
+});
+document.getElementById('desfazer').onclick=()=>{ if(!ultimo) return; ultimo.feito=!ultimo.feito; ultimo.seq+=ultimo.feito?1:-1; render(); document.getElementById('toast').classList.remove('on'); };
+
+const TABS=[['hoje','Hoje','<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-5v-6h-4v6H5a1 1 0 0 1-1-1z"/>'],
+  ['progresso','Progresso','<path d="M5 20V11M12 20V5M19 20v-7"/>'],
+  ['perfil','Perfil','<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>']];
+document.querySelectorAll('.tabbar').forEach(n=>{ n.innerHTML=TABS.map(([id,r,p])=>`<a href="#${id}" class="${n.dataset.ativa===id?'ativo':''}"><i><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">${p}</svg></i>${r}</a>`).join(''); });
+
+/* ---------- novo hábito ---------- */
+let icSel='livro', dias=[1,1,1,1,1,1,1];
+const nomeEl=document.getElementById('nome'), criar=document.getElementById('criar');
+function renderForm(){
+  document.getElementById('icones').innerHTML=Object.keys(ICONES).map(k=>`<button data-k="${k}" class="${k===icSel?'sel':''}" aria-label="Ícone ${k}">${icone(k)}</button>`).join('');
+  document.getElementById('dias').innerHTML=['D','S','T','Q','Q','S','S'].map((d,i)=>`<button data-i="${i}" class="${dias[i]?'sel':''}">${d}</button>`).join('');
+  validar(false);
+}
+function validar(mostrar){
+  const okNome=nomeEl.value.trim().length>=2, okDias=dias.some(Boolean);
+  criar.disabled=!(okNome&&okDias);
+  document.getElementById('erro-dias').textContent=okDias?'':'Escolha pelo menos um dia.';
+  if(mostrar){ nomeEl.classList.toggle('erro',!okNome); document.getElementById('erro-nome').textContent=okNome?'':'Dê um nome ao hábito (mín. 2 letras).'; }
+  else { nomeEl.classList.remove('erro'); document.getElementById('erro-nome').textContent=''; }
+}
+nomeEl.addEventListener('input',()=>validar(false));
+nomeEl.addEventListener('blur',()=>{ if(nomeEl.value.length) validar(true); });
+document.getElementById('icones').addEventListener('click',e=>{const b=e.target.closest('button'); if(b){icSel=b.dataset.k; renderForm();}});
+document.getElementById('dias').addEventListener('click',e=>{const b=e.target.closest('button'); if(b){dias[b.dataset.i]=dias[b.dataset.i]?0:1; renderForm();}});
+const sw=document.getElementById('sw');
+sw.onclick=()=>{sw.classList.toggle('on'); document.getElementById('hora').classList.toggle('on',sw.classList.contains('on'));};
+function descDias(){const n=dias.filter(Boolean).length; if(n===7) return 'Todos os dias'; if(n===5&&!dias[0]&&!dias[6]) return 'Seg a sex'; return n+(n===1?' dia':' dias')+' por semana';}
+criar.onclick=()=>{
+  const nome=nomeEl.value.trim();
+  const info=descDias()+(sw.classList.contains('on')?' · '+document.getElementById('hora-sel').value:'');
+  const h={id:Date.now(),nome,ic:icSel,seq:0,info,feito:false}; habitos.push(h); novoId=h.id; render();
+  document.getElementById('cartao-criado').innerHTML=icone(icSel)+`<div><div style="font-weight:800">${nome}</div><small>${info}</small></div>`;
+  nomeEl.value=''; icSel='livro'; dias=[1,1,1,1,1,1,1]; renderForm();
+  location.hash='criado';
+};
+
+/* ---------- progresso ---------- */
+const cores=['#94C8F2','#B9ACF3','#8FD4B4','#F4A3C0','#F6D266','#FFB48E','#F0876A'];
+const semana=[['S',4],['T',3],['Q',4],['Q',4],['S',2],['S',4],['D',2]];
+document.getElementById('barras').innerHTML=semana.map(([d,f],i)=>`<div><i style="height:${f/4*100}%;background:${cores[i]}"></i><em>${d}</em></div>`).join('');
+const niv=[3,3,2,3,0,1,3,3,3,2,3,3,2,3,3];
+let cal=''; for(let d=1;d<=30;d++){ cal+= d<=15?`<i class="n${niv[d-1]} ${d===15?'hj':''}" title="${d}/11"></i>`:`<i style="opacity:.5"></i>`; }
+document.getElementById('mes').innerHTML=cal;
+document.getElementById('por-habito').innerHTML=[['agua','Beber 2 L de água',93],['estudo','Estudar 30 min',88],['livro','Ler 10 páginas',71],['sol','Meditar 5 min',60]]
+  .map(([k,n,p])=>`<div class="taxa">${icone(k)}<div style="flex:1"><div class="nome">${n}</div><div class="trilho"><i style="width:${p}%;background:${ICONES[k].forte}"></i></div></div><b>${p}%</b></div>`).join('');
+
+/* ---------- navegação ---------- */
+const TELAS=['login','hoje','novo','criado','progresso','perfil'];
+function ir(){
+  let t=location.hash.slice(1); if(!TELAS.includes(t)) t='login';
+  if(t==='criado'&&!document.getElementById('cartao-criado').innerHTML)
+    document.getElementById('cartao-criado').innerHTML=icone('lua')+'<div><div style="font-weight:800">Dormir antes das 23h</div><small>Todos os dias · 22:30</small></div>';
+  if(t!=='hoje'&&t!=='criado') novoId=null;
+  document.querySelectorAll('.tela').forEach(s=>s.classList.toggle('on',s.id===t));
+  document.querySelectorAll('#mapa a').forEach(a=>a.classList.toggle('ativo',a.getAttribute('href')==='#'+t));
+  render();
+}
+window.addEventListener('hashchange',ir);
+renderForm(); ir();
+</script>
+</body>
+</html>
